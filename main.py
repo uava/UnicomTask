@@ -43,7 +43,7 @@ def woTree_task():
         print(traceback.format_exc())
         logging.error('【沃之树】: 错误，原因为: ' + str(e))
 
-#有一些问题，暂时还是出现加倍失败的情况
+#经多次测试，都可加倍成功了
 #每日签到，1积分 +4 积分(翻倍)，第七天得到 1G 日包
 #位置: 我的 --> 我的金币
 def daySign_task():
@@ -64,8 +64,6 @@ def daySign_task():
         doubleAd = client.post('https://act.10010.com/SigninApp/signin/bannerAdPlayingLogo')
         client.headers.pop('referer')
         doubleAd.encoding='utf-8'
-        #暂时添加上这一项留作观察
-        print('留作观察，做测试----->' + doubleAd.text)
         res1 = daySign.json()
         res2 = doubleAd.json()
         if res1['status'] == '0000':
@@ -107,7 +105,9 @@ def luckDraw_task():
 #位置: 首页 --> 游戏 --> 每日打卡
 def gameCenterSign_Task():
     data1 = {
-        'methodType': 'signin'
+        'methodType': 'signin',
+        'clientVersion': '8.0100',
+        'deviceType': 'Android'
     }
     data2 = {
         'methodType': 'iOSIntegralGet',
@@ -115,14 +115,6 @@ def gameCenterSign_Task():
         'deviceType': 'iOS'
     }
     try:
-        #游戏频道积分
-        gameCenter_exp = client.post('https://m.client.10010.com/producGameApp',data=data2)
-        gameCenter_exp.encoding='utf-8'
-        res1 = gameCenter_exp.json()
-        if res1['code'] == '0000':
-            logging.info('【游戏频道打卡】: 获得' + str(res1['integralNum']) + '积分')
-        else:
-            logging.info('【游戏频道打卡】: ' + res1['msg'])
         #游戏任务积分
         gameCenter = client.post('https://m.client.10010.com/producGame_signin', data=data1)
         gameCenter.encoding='utf-8'
@@ -131,6 +123,15 @@ def gameCenterSign_Task():
             logging.info('【游戏中心签到】: ' + '获得' + str(res['currentIntegral']) + '积分')
         elif res['respCode'] == '0000':
             logging.info('【游戏中心签到】: ' + res['respDesc'])
+        
+        #游戏频道积分
+        gameCenter_exp = client.post('https://m.client.10010.com/producGameApp',data=data2)
+        gameCenter_exp.encoding='utf-8'
+        res1 = gameCenter_exp.json()
+        if res1['code'] == '0000':
+            logging.info('【游戏频道打卡】: 获得' + str(res1['integralNum']) + '积分')
+        else:
+            logging.info('【游戏频道打卡】: ' + res1['msg'])
     except Exception as e:
         print(traceback.format_exc())
         logging.error('【游戏中心签到】: 错误，原因为: ' + str(e))
@@ -271,19 +272,16 @@ def dongaoPoints_task():
         print(traceback.format_exc())
         logging.error('【东奥积分活动】: 错误，原因为: ' + str(e))
 
-    
-
 if __name__ == '__main__':
     if client != False:
+        daySign_task()
+        luckDraw_task()
+        pointsLottery_task()
         gameCenterSign_Task()
         day100Integral_task()
         dongaoPoints_task()
-        pointsLottery_task()
-        daySign_task()
         woTree_task()
-        luckDraw_task()
         openBox_task()
         collectFlow_task()
     if len(os.environ.get('EMAIL_COVER')) != 0:
         notify.sendEmail()
-
